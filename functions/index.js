@@ -127,7 +127,7 @@ exports.updateExpForPomodoro = onDocumentUpdated(
     },
 );
 
-exports.onItemPurchase = onDocumentCreated(
+exports.addInventoryOnItemPurchase = onDocumentCreated(
     {
       document: "purchases/{purchaseId}",
       region: "asia-southeast2",
