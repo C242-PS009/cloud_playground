@@ -47,21 +47,28 @@ exports.updateExpForEisenhower = onDocumentUpdated(
         // Exp calculation
           const priority = taskAfter.priority || 4; // Default 4 (lowest)
           let expGained = 0;
-          switch (priority) {
-            case 1:
-              expGained = 50; // Urgent and Important
+          let coinsToAdd = 0;
+
+          switch (priority.toLowerCase()) {
+            case "urgent and important":
+              expGained = 50;
+              coinsToAdd = 50;
               break;
-            case 2:
-              expGained = 40; // Not Urgent but Important
+            case "urgent not-important":
+              expGained = 40;
+              coinsToAdd = 40;
               break;
-            case 3:
-              expGained = 30; // Urgent but Not Important
+            case "not-urgent important":
+              expGained = 30;
+              coinsToAdd = 30;
               break;
-            case 4:
-              expGained = 10; // Not Urgent and Not Important
+            case "not-urgent not-important":
+              expGained = 10;
+              coinsToAdd = 10;
               break;
             default:
               expGained = 10; // Default exp
+              coinsToAdd = 10;
           }
 
           // Update the user's exp_points
@@ -71,11 +78,15 @@ exports.updateExpForEisenhower = onDocumentUpdated(
             if (!userDoc.exists) {
               throw new Error("User does not exist.");
             }
-            const currentExp = userDoc.data().expPoints || 0;
-            transaction.update(userRef, {expPoints: currentExp + expGained});
+
+            transaction.update(userRef, {
+              expPoints: admin.firestore.FieldValue.increment(expGained),
+              coin: admin.firestore.FieldValue.increment(coinsToAdd),
+            });
           });
 
-          console.log(`Successfully added ${expGained} EXP to user: ${userId}`);
+          console.log(`Successfully added ${expGained} EXP 
+            nd ${coinsToAdd} Coins to user: ${userId}`);
         } catch (error) {
           console.error("Error updating exPoints:", error);
         }
@@ -105,6 +116,7 @@ exports.updateExpForPomodoro = onDocumentUpdated(
         try {
         // Exp calculation
           const expGained = 25;
+          const coinsToAdd = 10;
 
           // Update the user's expPoints
           const userRef = db.collection("users").doc(userId);
@@ -113,11 +125,15 @@ exports.updateExpForPomodoro = onDocumentUpdated(
             if (!userDoc.exists) {
               throw new Error("User does not exist.");
             }
-            const currentExp = userDoc.data().expPoints || 0;
-            transaction.update(userRef, {expPoints: currentExp + expGained});
+
+            transaction.update(userRef, {
+              expPoints: admin.firestore.FieldValue.increment(expGained),
+              coin: admin.firestore.FieldValue.increment(coinsToAdd),
+            });
           });
 
-          console.log(`Successfully added ${expGained} EXP to user: ${userId}`);
+          console.log(`Successfully added ${expGained} EXP and 
+            ${coinsToAdd} to user: ${userId}`);
           return null;
         } catch (error) {
           console.error("Error updating exp_points for Pomodoro:", error);

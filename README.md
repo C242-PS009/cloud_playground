@@ -15,18 +15,18 @@ Works done by the cloud computing division on HabitSaga project
 
 **Trigger Location**: `eisenhower_tasks/{taskId}`
 
-**Description**: This function is triggered when a document in the `eisenhower_tasks` collection is updated. It checks whether the task status has changed to completed. If the task has been marked as completed, the function awards experience points (EXP) based on the priority level of the task.
+**Description**: This function is triggered when a document in the `eisenhower_tasks` collection is updated. It checks whether the task status has changed to completed. If the task has been marked as completed, the function awards experience points (EXP) and coins based on the priority level of the task.
 
 **EXP Calculation**:
-- Priority 1, Urgent and Important: +50 EXP
-- Priority 2, Urgent but Not Important: +40 EXP
-- Priority 3, Not Urgent but Important : +30 EXP
-- Priority 4, Not Urgent and Not Important: +10 EXP
+- Priority 1, Urgent and Important: +50 EXP, +50 Coins
+- Priority 2, Urgent but Not Important: +40 EXP, +40 Coins
+- Priority 3, Not Urgent but Important: +30 EXP, +30 Coins
+- Priority 4, Not Urgent and Not Important: +10 EXP, +10 Coins
 
 **Steps**:
 - Retrieve the `userId` from the updated task document.
 - Check if the task has changed from incomplete to complete.
-- Use a Firestore transaction to update the user's EXP in the `users` collection.
+- Use a Firestore transaction to update the user's EXP and coin balance in the `users` collection.
 
 **Logs**:
 - Logs success messages when EXP is added.
@@ -38,12 +38,12 @@ Works done by the cloud computing division on HabitSaga project
 
 **Trigger Location**: `pomodoro_sessions/{sessionId}`
 
-**Description**: This function is triggered when a document in the `pomodoro_sessions` collection is updated. It checks whether the Pomodoro session status has changed to completed. If it is completed, the function awards the user with 25 EXP.
+**Description**: This function is triggered when a document in the `pomodoro_sessions` collection is updated. It checks whether the Pomodoro session status has changed to completed. If it is completed, the function awards the user with 25 EXP and 10 Coins.
 
 **Steps**:
 - Retrieve the `userId` from the updated Pomodoro session document.
 - Check if the session status has changed from incomplete to complete.
-- Use a Firestore transaction to update the user's EXP in the `users` collection.
+- Use a Firestore transaction to update the user's EXP and coin balance in the `users` collection.
 
 **Logs**:
 - Logs success messages when EXP is added.
