@@ -18,10 +18,10 @@ Works done by the cloud computing division on HabitSaga project
 **Description**: This function is triggered when a document in the `eisenhower_tasks` collection is updated. It checks whether the task status has changed to completed. If the task has been marked as completed, the function awards experience points (EXP) and coins based on the priority level of the task.
 
 **EXP Calculation**:
-- Priority 1, Urgent and Important: +50 EXP, +50 Coins
-- Priority 2, Urgent but Not Important: +40 EXP, +40 Coins
-- Priority 3, Not Urgent but Important: +30 EXP, +30 Coins
-- Priority 4, Not Urgent and Not Important: +10 EXP, +10 Coins
+- ("urgent important")Priority 1, Urgent and Important: +50 EXP, +50 Coins
+- ("urgent not-important")Priority 2, Urgent but Not Important: +40 EXP, +40 Coins
+- ("not-urgent important")Priority 3, Not Urgent but Important: +30 EXP, +30 Coins
+- ("not-urgent not-important")Priority 4, Not Urgent and Not Important: +10 EXP, +10 Coins
 
 **Steps**:
 - Retrieve the `userId` from the updated task document.

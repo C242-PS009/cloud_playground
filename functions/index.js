@@ -50,7 +50,7 @@ exports.updateExpForEisenhower = onDocumentUpdated(
           let coinsToAdd = 0;
 
           switch (priority.toLowerCase()) {
-            case "urgent and important":
+            case "urgent important":
               expGained = 50;
               coinsToAdd = 50;
               break;
