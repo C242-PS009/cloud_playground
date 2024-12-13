@@ -21,6 +21,7 @@
 const {onDocumentCreated} = require("firebase-functions/v2/firestore");
 const {onDocumentUpdated} = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
+
 admin.initializeApp();
 
 const db = admin.firestore();
@@ -157,7 +158,31 @@ exports.addInventoryOnItemPurchase = onDocumentCreated(
       }
 
       try {
-      // Check if the user already owns the item
+      // Fetch the item details
+        const itemSnapshot = await db.collection("items").doc(itemId).get();
+        if (!itemSnapshot.exists) {
+          throw new Error("Item does not exist.");
+        }
+        const itemData = itemSnapshot.data();
+        const itemPrice = itemData.price;
+
+        // Fetch the user's current coin balance
+        const userRef = db.collection("users").doc(userId);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+          throw new Error("User does not exist.");
+        }
+        const userData = userDoc.data();
+        const userCoins = userData.coin;
+
+        // Check if the user has enough coins to purchase the item
+        if (userCoins < itemPrice) {
+          console.error(`User does not have enough coins to purchase item:
+             ${itemId}`);
+          return;
+        }
+
+        // Check if the user already owns the item
         const inventoryRef = db.collection("users").
             doc(userId).collection("inventory");
         const existingItemSnapshot = await inventoryRef.
@@ -169,19 +194,27 @@ exports.addInventoryOnItemPurchase = onDocumentCreated(
         }
 
         // Add the purchased item to the user's inventory
-        const itemSnapshot = await db.collection("items").doc(itemId).get();
-        if (!itemSnapshot.exists) {
-          throw new Error("Item does not exist.");
-        }
-        const itemData = itemSnapshot.data();
+        await db.runTransaction(async (transaction) => {
+          const userDocInTransaction = await transaction.get(userRef);
+          if (!userDocInTransaction.exists) {
+            throw new Error("User does not exist during transaction.");
+          }
 
-        await inventoryRef.doc(itemId).set({
-          itemId: itemId,
-          name: itemData.name,
-          itemCategory: itemData.itemCategory,
-          img: itemData.img,
-          purchaseDate: new Date().toISOString(),
+          // Deduct coins
+          transaction.update(userRef, {
+            coin: admin.firestore.FieldValue.increment(-itemPrice),
+          });
+
+          // Add the item to inventory
+          transaction.set(inventoryRef.doc(itemId), {
+            itemId: itemId,
+            name: itemData.name,
+            itemCategory: itemData.itemCategory,
+            img: itemData.img,
+            purchaseDate: new Date().toISOString(),
+          });
         });
+
         console.log(`Successfully added item ${itemId} 
           to player ${userId}'s inventory.`);
       } catch (error) {
@@ -189,3 +222,42 @@ exports.addInventoryOnItemPurchase = onDocumentCreated(
       }
     });
 
+exports.onUserDocumentCreated = onDocumentCreated(
+    {
+      document: "users/{userId}",
+      region: "asia-southeast2",
+    },
+    async (event) => {
+      const userId = event.params.userId;
+      const userData = event.data.data();
+
+      try {
+        console.log(`New user document created: ${userId}`, userData);
+
+        // Add the predefined item to the user's inventory
+        const defaultItemId = "q5VB4nGIAH4G9J3c2UrY";
+
+        const itemDoc = await db.collection("items").doc(defaultItemId).get();
+        if (!itemDoc.exists) {
+          throw new Error(`Item with ID ${defaultItemId} does not exist.`);
+        }
+
+        const itemData = itemDoc.data();
+        const inventoryRef = db.collection("users")
+            .doc(userId).collection("inventory");
+
+        await inventoryRef.doc(defaultItemId).set({
+          itemId: defaultItemId,
+          name: itemData.name,
+          itemCategory: itemData.itemCategory,
+          img: itemData.img,
+          purchaseDate: new Date().toISOString(),
+        });
+
+        console.log(`Default item ${defaultItemId}
+          added to inventory for userId: ${userId}`);
+      } catch (error) {
+        console.error("Error initializing user document:", error);
+      }
+    },
+);

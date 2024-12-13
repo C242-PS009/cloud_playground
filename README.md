@@ -32,22 +32,30 @@ Works done by the cloud computing division on HabitSaga project
 - Logs success messages when EXP is added.
 - Logs errors if any issues occur during the transaction.
 
-### 2. `updateExpForPomodoro`
+### 2. `onUserDocumentCreated`
 
-**Trigger Type**: Firestore `onDocumentUpdated`
+**Trigger Type**: Firestore `onDocumentCreated`
 
-**Trigger Location**: `pomodoro_sessions/{sessionId}`
+**Trigger Location**: `users/{userId}`
 
-**Description**: This function is triggered when a document in the `pomodoro_sessions` collection is updated. It checks whether the Pomodoro session status has changed to completed. If it is completed, the function awards the user with 25 EXP and 10 Coins.
+**Description**: This function is triggered when a new document is created in the `users` collection. It initializes the user's inventory with a predefined default item.
 
 **Steps**:
-- Retrieve the `userId` from the updated Pomodoro session document.
-- Check if the session status has changed from incomplete to complete.
-- Use a Firestore transaction to update the user's EXP and coin balance in the `users` collection.
+- Retrieve the `userId` from the document path and the document data.
+- Retrieve the details of the default item from the `items` collection using its `itemId`.
+- Add the default item to the inventory sub-collection under the user document. The item details include:
+    - itemId
+    - name
+    - itemCategory
+    - img
+    - purchaseDate
+
+**Default Item**:
+- ID: q5VB4nGIAH4G9J3c2UrY (Oruka).
 
 **Logs**:
-- Logs success messages when EXP is added.
-- Logs errors if any issues occur during the transaction.
+- Logs success messages when the default item is added to the user's inventory.
+- Logs errors if the default item is missing or any issues occur during the process.
 
 ### 3. `addInventoryOnItemPurchase`
 
